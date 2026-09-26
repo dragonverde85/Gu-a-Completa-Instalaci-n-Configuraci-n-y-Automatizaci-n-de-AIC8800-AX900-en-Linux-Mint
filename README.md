@@ -20,7 +20,6 @@ Guía paso a paso para la instalación, activación y automatización del adapta
 
 Antes de comenzar, instala las herramientas necesarias para compilar módulos del kernel y gestionar las interfaces inalámbricas:
 
-```bash
 sudo apt update
 sudo apt install -y dkms build-essential git usb-modeswitch rfkill bluez bluetooth
 
@@ -30,34 +29,28 @@ sudo apt install -y dkms build-essential git usb-modeswitch rfkill bluez bluetoo
 
     Clona el repositorio oficial (o entra a la carpeta si ya lo habías clonado):
 
-Bash
 
 cd ~
 [ -d "aic8800d80" ] && cd aic8800d80 || git clone [https://github.com/shenmintao/aic8800d80.git](https://github.com/shenmintao/aic8800d80.git) && cd aic8800d80
 
     Asegúrate de estar en la rama main e inicia el instalador:
 
-Bash
 
 git checkout main
 sudo ./install.sh
 
     Reinicia el sistema para registrar el módulo en DKMS y aplicar las reglas iniciales de udev:
 
-Bash
-
 sudo reboot
 
 3. Conmutación USB y Verificación
 
 El adaptador inicia por defecto en modo almacenamiento masivo (1111:1111). Si al encender el equipo el Wi-Fi no se activa de inmediato, fuerza la conmutación de modo y desbloquea la radio:
-Bash
 
 sudo usb_modeswitch -c /etc/usb_modeswitch.d/1111:1111
 sudo rfkill unblock all
 
 Para comprobar si la interfaz de red ya está detectada:
-Bash
 
 ip link
 
@@ -67,21 +60,15 @@ Para que el adaptador levante la interfaz Bluetooth correctamente sobre el contr
 
     Carga los módulos requeridos en el kernel:
 
-Bash
-
 sudo modprobe aic_load_fw
 sudo modprobe aic_zlp_quirk
 
     Reinicia el servicio de Bluetooth y levanta la interfaz:
 
-Bash
-
 sudo systemctl restart bluetooth
 sudo hciconfig hci0 up
 
     Verifica el estado del controlador:
-
-Bash
 
 hciconfig -a
 
@@ -92,19 +79,14 @@ Para evitar introducir comandos manualmente en cada reinicio, configura la carga
 
     Agrega los módulos de Bluetooth al archivo de inicio del kernel:
 
-Bash
-
 echo "aic_load_fw" | sudo tee -a /etc/modules
 echo "aic_zlp_quirk" | sudo tee -a /etc/modules
 
     (Opcional) Si experimentas desconexiones esporádicas, desactiva la suspensión de energía USB editando GRUB:
 
-Bash
-
 sudo nano /etc/default/grub
 
 Añade usbcore.autosuspend=-1 dentro de las comillas en GRUB_CMDLINE_LINUX_DEFAULT, guarda los cambios y actualiza:
-Bash
 
 sudo update-grub
 
@@ -114,7 +96,6 @@ sudo update-grub
 Ocurre cuando existen residuos de compilaciones manuales previas en el sistema.
 
 Solución: Limpia el registro de DKMS, elimina carpetas antiguas y reinstala desde main:
-Bash
 
 sudo dkms remove aic8800/1.0.0 --all
 sudo rm -rf /lib/modules/$(uname -r)/kernel/drivers/net/wireless/aic8800
@@ -129,7 +110,6 @@ sudo reboot
 Causado por haber compilado con la rama legacy-mcu1.
 
 Solución: Vuelve a la rama estable ejecutando:
-Bash
 
 cd ~/aic8800d80
 git checkout main
